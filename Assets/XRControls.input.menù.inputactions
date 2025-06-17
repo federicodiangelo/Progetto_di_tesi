@@ -1,0 +1,34 @@
+{
+    "name": "XRControls.input.menù",
+    "maps": [
+        {
+            "name": "MenuControl",
+            "id": "fa8d22e3-284c-443e-8e8c-48cd48824b63",
+            "actions": [
+                {
+                    "name": "ToggleMenu",
+                    "type": "Button",
+                    "id": "bb36a9f7-a042-4f3f-95ac-bab471f4d01c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "3b7cc5c3-a01a-4e4b-86e2-03b90a75fedd",
+                    "path": "<QuestTouchPlusController>{RightHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleMenu",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
