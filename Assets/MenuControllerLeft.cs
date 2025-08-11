@@ -91,8 +91,8 @@ public class XRMenuControllerLeft : MonoBehaviour
             if (rig != null && rig.centerEyeAnchor != null)
             {
                 Transform head = rig.centerEyeAnchor;
-                Vector3 forwardOffset = head.forward * 1f;
-                Vector3 verticalOffset = Vector3.down * 0.8f;
+                Vector3 forwardOffset = head.forward * 0.6f;
+                Vector3 verticalOffset = Vector3.down * 0.3f;
                 menuCanvas.transform.position = head.position + forwardOffset + verticalOffset;
 
                 menuCanvas.transform.LookAt(head.position);
