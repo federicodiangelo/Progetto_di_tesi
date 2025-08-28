@@ -23,3 +23,6 @@ Thumbs.db
 *.apk
 /[Bb]uild/
 /[Bb]uilds/
+
+# No sample zips
+*.zip
