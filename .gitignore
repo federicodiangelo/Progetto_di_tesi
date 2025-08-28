@@ -18,3 +18,8 @@
 *.tmp
 .DS_Store
 Thumbs.db
+
+# Build output
+*.apk
+/[Bb]uild/
+/[Bb]uilds/
