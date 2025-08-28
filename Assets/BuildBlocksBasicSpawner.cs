@@ -6,106 +6,104 @@ public class BuildBlocksBasicSpawner : MonoBehaviour
     public GameObject[] prefabs;
 
     [Header("Parent e punto di spawn (opzionali)")]
-    [Tooltip("Parent degli oggetti instanziati. Se nullo, nessun parent.")]
-    public Transform spawnParent;
-    [Tooltip("Se assegnato, usa posizione/rotazione di questo Transform per lo spawn.")]
-    public Transform spawnPoint;
+    public Transform spawnParent;    // se nullo: nessun parent
+    public Transform spawnPoint;     // se nullo: usa camera o lo spawner
 
-    [Header("Spawn davanti alla camera")]
-    [Tooltip("Se true e spawnPoint è nullo, spawna davanti alla camera.")]
+    [Header("Spawn davanti alla camera (se spawnPoint è nullo)")]
     public bool spawnInFrontOfCamera = true;
-    [Tooltip("Distanza davanti alla camera quando spawnInFrontOfCamera è true.")]
     [Range(0.2f, 5f)] public float spawnDistance = 1.5f;
-    [Tooltip("Offset locale da applicare quando si spawna davanti alla camera (x=destra, y=su, z=avanti).")]
     public Vector3 spawnOffsetLocal = Vector3.zero;
 
     [Header("Comportamento")]
-    [Tooltip("Se true, distrugge l'ultimo oggetto spawnato prima di spawnarne uno nuovo.")]
     public bool replacePrevious = true;
 
-    [Header("Layer & Scala (facoltativi)")]
-    [Tooltip("Se true, forza il layer su tutto l'oggetto spawnato (ricorsivo).")]
+    [Header("Layer & Scala")]
     public bool forceLayer = true;
-    [Tooltip("Layer da assegnare agli oggetti spawnati (Default=0).")]
     public int layerToSet = 0; // Default
-    [Tooltip("Se true, forza la scala dell'oggetto radice spawnato.")]
     public bool forceScale = true;
-    [Tooltip("Scala da applicare all'oggetto spawnato (solo se forceScale=true).")]
-    public Vector3 forcedScale = Vector3.one;
+    public Vector3 forcedScale = new Vector3(0.2f, 0.2f, 0.2f);
+
+    [Header("Modalità fisica")]
+    [Tooltip("Se true: niente fisica. Rimane kinematic, non cade mai, ma è afferrabile.")]
+    public bool noPhysicsGrabbable = true;
 
     private GameObject _lastSpawned;
 
-    /// <summary>
-    /// Chiamata dal provider/menu con l'indice selezionato (0..N-1)
-    /// </summary>
     public void SetSelection(int index)
     {
-        // Validazioni
-        if (prefabs == null || prefabs.Length == 0)
-        {
-            Debug.LogWarning("[SPAWNER] Nessun prefab assegnato.");
-            return;
-        }
-        if (index < 0 || index >= prefabs.Length)
-        {
-            Debug.LogWarning($"[SPAWNER] Indice {index} fuori range (0..{prefabs.Length - 1}).");
-            return;
-        }
+        if (prefabs == null || prefabs.Length == 0) { Debug.LogWarning("[SPAWNER] Nessun prefab assegnato."); return; }
+        if (index < 0 || index >= prefabs.Length)  { Debug.LogWarning($"[SPAWNER] Indice {index} fuori range (0..{prefabs.Length-1})."); return; }
         var prefab = prefabs[index];
-        if (prefab == null)
-        {
-            Debug.LogWarning($"[SPAWNER] Prefab all'indice {index} è NULL.");
-            return;
-        }
+        if (prefab == null) { Debug.LogWarning($"[SPAWNER] Prefab all'indice {index} è NULL."); return; }
 
-        // Rimpiazza l'ultimo se richiesto
-        if (replacePrevious && _lastSpawned != null)
-        {
-            Destroy(_lastSpawned);
-            _lastSpawned = null;
-        }
+        if (replacePrevious && _lastSpawned) { Destroy(_lastSpawned); _lastSpawned = null; }
 
-        // Calcola posizione/rotazione/parent
-        Vector3 pos;
-        Quaternion rot;
-        Transform parent = spawnParent != null ? spawnParent : null;
-
-        if (spawnPoint != null)
+        // posizione/rotazione/parent
+        Vector3 pos; Quaternion rot; Transform parent = spawnParent ? spawnParent : null;
+        if (spawnPoint)
         {
-            pos = spawnPoint.position;
-            rot = spawnPoint.rotation;
+            pos = spawnPoint.position; rot = spawnPoint.rotation;
         }
         else if (spawnInFrontOfCamera && TryGetBestCamera(out var cam))
         {
             var t = cam.transform;
-            // punto davanti alla camera + offset locale
-            pos = t.position + t.TransformDirection(spawnOffsetLocal + new Vector3(0, 0, spawnDistance));
+            pos = t.position + t.TransformDirection(spawnOffsetLocal + new Vector3(0,0,spawnDistance));
             rot = Quaternion.LookRotation(t.forward, Vector3.up);
         }
         else
         {
-            // fallback: posizione di questo spawner
-            pos = transform.position;
-            rot = transform.rotation;
-            if (parent == null) parent = transform; // per tenerlo in scena vicino allo spawner
+            pos = transform.position; rot = transform.rotation;
+            if (!parent) parent = transform;
         }
 
-        // Instanzia
         _lastSpawned = Instantiate(prefab, pos, rot, parent);
-
-        // Assicurati che sia attivo
         if (!_lastSpawned.activeSelf) _lastSpawned.SetActive(true);
 
-        // Forza layer e scala se richiesto
         if (forceLayer) SetLayerRecursively(_lastSpawned, layerToSet);
         if (forceScale) _lastSpawned.transform.localScale = forcedScale;
 
-        // Log dettagliato
-        string camName = Camera.main != null ? Camera.main.name : "(no Camera.main)";
-        Debug.Log($"[SPAWNER] Spawn -> [{prefab.name}] (idx={index}) " +
-                  $"pos={_lastSpawned.transform.position:F3} rotY={_lastSpawned.transform.eulerAngles.y:F1} " +
-                  $"parent={(parent ? parent.name : "null")} cam={camName} layer={(forceLayer ? layerToSet.ToString() : "keep")} " +
-                  $"scale={(forceScale ? forcedScale.ToString() : "keep")}");
+        ConfigureAsPhysicslessGrabbable(_lastSpawned);
+
+        var p = _lastSpawned.transform.position;
+        var ry = _lastSpawned.transform.eulerAngles.y;
+        var sc = _lastSpawned.transform.localScale;
+        Debug.Log($"[SPAWNER] Spawn -> [{prefab.name}] (idx={index}) pos=({p.x:F3},{p.y:F3},{p.z:F3}) rotY={ry:F1} parent={(parent?parent.name:"null")} layer={(forceLayer?layerToSet.ToString():"keep")} scale=({sc.x:F2},{sc.y:F2},{sc.z:F2})");
+    }
+
+    // ------------------------------------------------------------------------
+
+    private void ConfigureAsPhysicslessGrabbable(GameObject go)
+    {
+        // Assicura collisore per l'interazione
+        if (!go.GetComponent<Collider>()) go.AddComponent<BoxCollider>();
+
+        // Assicura un Rigidbody (Oculus/Meta Grabbable lo gradisce). Lo rendiamo "senza fisica".
+        var rb = go.GetComponent<Rigidbody>();
+        if (!rb) rb = go.AddComponent<Rigidbody>();
+
+        if (noPhysicsGrabbable)
+        {
+            rb.useGravity = false;
+            rb.isKinematic = true;                 // non cade, non viene spinto
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+            rb.interpolation = RigidbodyInterpolation.None;
+        }
+        else
+        {
+            // Alternativa: fisica normale (se mai ti servisse)
+            rb.useGravity = true;
+            rb.isKinematic = false;
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
+            rb.mass = 0.8f;
+            rb.linearDamping = 0.2f;
+            rb.angularDamping = 0.05f;
+        }
+
+        // Se il prefab ha già i componenti “Network Grabbable” dei Meta Blocks, li lasciamo stare.
+        // (Qui non tocchiamo TransferOwnership/Multiplayer)
     }
 
     private static void SetLayerRecursively(GameObject go, int layer)
@@ -117,38 +115,21 @@ public class BuildBlocksBasicSpawner : MonoBehaviour
     private bool TryGetBestCamera(out Camera cam)
     {
         cam = Camera.main;
-        if (cam != null && cam.enabled) return true;
-
-        // fallback: prima camera abilitata in scena
-        var cams = FindObjectsOfType<Camera>();
-        foreach (var c in cams)
-        {
-            if (c != null && c.enabled)
-            {
-                cam = c;
-                return true;
-            }
-        }
+        if (cam && cam.enabled) return true;
+        foreach (var c in FindObjectsOfType<Camera>()) if (c && c.enabled) { cam = c; return true; }
         return false;
     }
 
-    // Gizmo per vedere dove spawnerà quando selezioni lo spawner in Editor
     private void OnDrawGizmosSelected()
     {
         Vector3 gizmoPos;
-        if (spawnPoint != null)
-        {
-            gizmoPos = spawnPoint.position;
-        }
+        if (spawnPoint) gizmoPos = spawnPoint.position;
         else if (spawnInFrontOfCamera && TryGetBestCamera(out var cam))
         {
             var t = cam.transform;
-            gizmoPos = t.position + t.TransformDirection(spawnOffsetLocal + new Vector3(0, 0, spawnDistance));
+            gizmoPos = t.position + t.TransformDirection(spawnOffsetLocal + new Vector3(0,0,spawnDistance));
         }
-        else
-        {
-            gizmoPos = transform.position;
-        }
+        else gizmoPos = transform.position;
 
         Gizmos.DrawWireSphere(gizmoPos, 0.06f);
     }

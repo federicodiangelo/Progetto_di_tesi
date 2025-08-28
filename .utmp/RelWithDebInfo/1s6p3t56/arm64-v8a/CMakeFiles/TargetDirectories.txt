@@ -1,0 +1,5 @@
+/Users/federicodiangelo/unity/Museo/.utmp/RelWithDebInfo/1s6p3t56/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/federicodiangelo/unity/Museo/.utmp/RelWithDebInfo/1s6p3t56/arm64-v8a/CMakeFiles/rebuild_cache.dir
+/Users/federicodiangelo/unity/Museo/.utmp/RelWithDebInfo/1s6p3t56/arm64-v8a/GameActivity/CMakeFiles/game.dir
+/Users/federicodiangelo/unity/Museo/.utmp/RelWithDebInfo/1s6p3t56/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
+/Users/federicodiangelo/unity/Museo/.utmp/RelWithDebInfo/1s6p3t56/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir
