@@ -9,6 +9,7 @@ Library: /Users/federicodiangelo/unity/Museo/Temp/BurstOutput/tempburstlibs/arm6
 --target-framework=NetFramework
 --generate-link-xml=Temp/burst.link.xml
 --temp-folder=/Users/federicodiangelo/unity/Museo/Temp/Burst
+--debug=Full
 --key-folder=/Applications/Unity/Hub/Editor/6000.1.3f1/PlaybackEngines/AndroidPlayer
 --decode-folder=/Users/federicodiangelo/unity/Museo/Library/Burst
 --output=/Users/federicodiangelo/unity/Museo/Temp/BurstOutput/tempburstlibs/arm64-v8a/lib_burst_generated
@@ -124,6 +125,7 @@ Library: /Users/federicodiangelo/unity/Museo/Temp/BurstOutput/tempburstlibs/arm6
 --float-mode=Fast
 --generate-link-xml=Temp/burst.link.xml
 --temp-folder=/Users/federicodiangelo/unity/Museo/Temp/Burst
+--debug=Full
 --key-folder=/Applications/Unity/Hub/Editor/6000.1.3f1/PlaybackEngines/AndroidPlayer
 --decode-folder=/Users/federicodiangelo/unity/Museo/Library/Burst
 --output=/Users/federicodiangelo/unity/Museo/Temp/BurstOutput/tempburstlibs/arm64-v8a/lib_burst_generated
